@@ -17,6 +17,12 @@ def get_file_from_hg(filepath):
     out, err = p.communicate()
     return out
 
+def get_file_from_bzr(filepath):
+    #print("Getting %s from bzr" % filepath)
+    p = subprocess.Popen(("bzr", "cat", filepath), stdout=subprocess.PIPE)
+    out, err = p.communicate()
+    return out
+
 def get_file_from_git(filepath):
     #print("Getting %s from git" % filepath)
     p = subprocess.Popen(("git", "ls-files", "--full-name", filepath), stdout=subprocess.PIPE)
@@ -48,6 +54,8 @@ def get_file_from_revcontrol(filepath):
     while True:
         if os.path.exists(os.path.join(thisdir, '.hg')):
             return get_file_from_hg(filepath)
+        if os.path.exists(os.path.join(thisdir, '.bzr')):
+            return get_file_from_bzr(filepath)
         if os.path.exists(os.path.join(thisdir, '.git')):
             return get_file_from_git(filepath)
         parent = os.path.dirname(thisdir)

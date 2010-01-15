@@ -7,7 +7,7 @@ Usage:
 The version of the file checked out from the revision control system is marked
 readonly, to prevent accidental editing of it.
 
-Subversion, mercurial, git, and CVS repositories are supported.
+Subversion, Mercurial, Git, Bazaar and CVS repositories are supported.
 
 License
 =======
