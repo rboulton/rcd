@@ -17,8 +17,10 @@ def get_file_from_hg(filepath):
     return out
 
 def get_file_from_git(filepath):
-    # FIXME - this doesn't work - need a different git command
-    p = subprocess.Popen(("git", "cat", filepath), stdout=subprocess.PIPE)
+    p = subprocess.Popen(("git", "ls-files", "--full-name", filepath), stdout=subprocess.PIPE)
+    out, err = p.communicate()
+    filepath = out.strip()
+    p = subprocess.Popen(("git", "show", "HEAD:" + filepath), stdout=subprocess.PIPE)
     out, err = p.communicate()
     return out
 
@@ -31,6 +33,7 @@ def get_file_from_revcontrol(filepath):
     thisdir = os.path.dirname(filepath)
     if os.path.exists(os.path.join(thisdir, '.svn')):
         return get_file_from_svn(filepath)
+
     while True:
         if os.path.exists(os.path.join(thisdir, '.hg')):
             return get_file_from_hg(filepath)
