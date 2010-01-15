@@ -52,8 +52,7 @@ def get_file_from_revcontrol(filepath):
             return get_file_from_git(filepath)
         parent = os.path.dirname(thisdir)
         if parent == thisdir:
-            print "Couldn't find any known revision control system for %s" % filepath
-            return ''
+            sys.exit("Couldn't find any known revision control system for %s" % filepath)
         thisdir = parent
 
 def open_diffs(filepath):
