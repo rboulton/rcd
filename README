@@ -1,0 +1,10 @@
+Open vimdiff with the modified and unmodified versions of a file.
+
+Usage:
+
+  rcd <filename>
+
+The version of the file checked out from the revision control system is marked
+readonly, to prevent accidental editing of it.
+
+Subversion, mercurial and git repositories are supported.
