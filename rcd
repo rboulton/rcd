@@ -32,10 +32,18 @@ def get_file_from_svn(filepath):
     out, err = p.communicate()
     return out
 
+def get_file_from_cvs(filepath):
+    #print("Getting %s from cvs" % filepath)
+    p = subprocess.Popen(("cvs", "update", "-p", filepath), stdout=subprocess.PIPE)
+    out, err = p.communicate()
+    return out
+
 def get_file_from_revcontrol(filepath):
     thisdir = os.path.dirname(os.path.realpath(os.path.abspath(filepath)))
     if os.path.exists(os.path.join(thisdir, '.svn')):
         return get_file_from_svn(filepath)
+    if os.path.exists(os.path.join(thisdir, 'CVS')):
+        return get_file_from_cvs(filepath)
 
     while True:
         if os.path.exists(os.path.join(thisdir, '.hg')):
