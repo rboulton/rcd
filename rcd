@@ -1,0 +1,61 @@
+#!/usr/bin/env python
+"""Open vimdiff with the modified and unmodified versions of a file.
+
+"""
+
+import os
+import sys
+import subprocess
+import tempfile
+
+if len(sys.argv) != 2:
+    print "Usage: hgd <filename>"
+
+def get_file_from_hg(filepath):
+    p = subprocess.Popen(("hg", "cat", filepath), stdout=subprocess.PIPE)
+    out, err = p.communicate()
+    return out
+
+def get_file_from_git(filepath):
+    # FIXME - this doesn't work - need a different git command
+    p = subprocess.Popen(("git", "cat", filepath), stdout=subprocess.PIPE)
+    out, err = p.communicate()
+    return out
+
+def get_file_from_svn(filepath):
+    p = subprocess.Popen(("svn", "cat", filepath), stdout=subprocess.PIPE)
+    out, err = p.communicate()
+    return out
+
+def get_file_from_revcontrol(filepath):
+    thisdir = os.path.dirname(filepath)
+    if os.path.exists(os.path.join(thisdir, '.svn')):
+        return get_file_from_svn(filepath)
+    while True:
+        if os.path.exists(os.path.join(thisdir, '.hg')):
+            return get_file_from_hg(filepath)
+        if os.path.exists(os.path.join(thisdir, '.git')):
+            return get_file_from_git(filepath)
+        parent = os.path.dirname(thisdir)
+        if parent == thisdir:
+            return ''
+        thisdir = parent
+
+def open_diffs(filepath):
+    orig_contents = get_file_from_revcontrol(filepath)
+
+    orig_file = tempfile.NamedTemporaryFile()
+    try:
+        orig_file.write(orig_contents)
+        orig_file.flush()
+        os.chmod(orig_file.name, 0400)
+        subprocess.call(("vimdiff", orig_file.name, filepath))
+    finally:
+        orig_file.close()
+
+if __name__ == '__main__':
+    if len(sys.argv) <= 1:
+        print "Usage: rcd <filepath> [<filepath> ...]"
+        sys.exit(1)
+    for filepath in sys.argv[1:]:
+        open_diffs(filepath)
