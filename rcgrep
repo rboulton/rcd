@@ -1,0 +1,87 @@
+#!/usr/bin/env python
+"""Open vim in quickfix mode with the results of grepping for an expression.
+
+"""
+
+import os
+import sys
+import subprocess
+import tempfile
+
+def grep_in_svn(opts, patterns):
+    FIXME
+
+def grep_in_cvs(opts, patterns):
+    FIXME
+
+def grep_in_hg(opts, patterns):
+    FIXME
+
+def grep_in_bzr(opts, patterns):
+    FIXME
+
+def grep_in_git(opts, patterns):
+    cmd = ("git", "grep", "-n") + tuple(opts) + tuple(patterns)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    out, err = p.communicate()
+    return out
+
+def grep_in_revcontrol(opts, patterns):
+    thisdir = os.path.realpath(os.path.abspath(os.getcwd()))
+    if os.path.exists(os.path.join(thisdir, '.svn')):
+        return grep_in_svn(opts, patterns)
+    if os.path.exists(os.path.join(thisdir, 'CVS')):
+        return grep_in_cvs(opts, patterns)
+
+    while True:
+        if os.path.exists(os.path.join(thisdir, '.hg')):
+            return grep_in_hg(opts, patterns)
+        if os.path.exists(os.path.join(thisdir, '.bzr')):
+            return grep_in_bzr(opts, patterns)
+        if os.path.exists(os.path.join(thisdir, '.git')):
+            return grep_in_git(opts, patterns)
+        parent = os.path.dirname(thisdir)
+        if parent == thisdir:
+            sys.exit("Couldn't find any known revision control system")
+        thisdir = parent
+
+def open_vim(args):
+    patterns = []
+    opts = []
+    while len(args) != 0:
+        if args[0] == '--':
+            if len(args) < 2:
+                sys.exit("Missing pattern")
+            patterns.extend(args[0:])
+            break
+	if args[0] == '-e':
+	    patterns.extend(args[0:2])
+	    args = args[2:]
+	    continue
+        arg = args[0]
+        args = args[1:]
+        if arg.startswith('-'):
+            opts.append(arg)
+        else:
+            patterns.append(arg)
+    if len(patterns) == 0:
+        sys.exit("Missing pattern")
+    grep_results = grep_in_revcontrol(opts, patterns)
+    if grep_results.strip() == '':
+        print "No matches"
+        return
+
+    result_file = tempfile.NamedTemporaryFile()
+    try:
+        result_file.write(grep_results)
+        result_file.flush()
+        os.chmod(result_file.name, 0400)
+        subprocess.call(("vim", "-c", ":cw", "-q", result_file.name))
+    finally:
+        result_file.close()
+
+if __name__ == '__main__':
+    if len(sys.argv) <= 1:
+        print "Usage: rcgrep <regexp> [options]"
+        sys.exit(1)
+    open_vim(sys.argv[1:])
