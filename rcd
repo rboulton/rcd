@@ -8,9 +8,6 @@ import sys
 import subprocess
 import tempfile
 
-if len(sys.argv) != 2:
-    print "Usage: hgd <filename>"
-
 def get_file_from_hg(filepath):
     #print("Getting %s from hg" % filepath)
     p = subprocess.Popen(("hg", "cat", filepath), stdout=subprocess.PIPE)
